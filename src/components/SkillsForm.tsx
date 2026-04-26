@@ -1,10 +1,18 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Compass, Loader2, MapPin, Sparkles } from "lucide-react";
-import { IntakeForm } from "@/lib/unmapped-types";
+import { IntakeForm, SavedProfile } from "@/lib/unmapped-types";
+import { COUNTRY_PRESETS, CountryPreset, CountrySwitcher } from "@/components/CountrySwitcher";
+import { ProfileHistory } from "@/components/ProfileHistory";
+import { AboutSection } from "@/components/AboutSection";
 
 interface Props {
   onSubmit: (form: IntakeForm) => void;
   loading: boolean;
+  country: CountryPreset["id"];
+  onCountryChange: (id: CountryPreset["id"]) => void;
+  history: SavedProfile[];
+  onOpenHistory: (p: SavedProfile) => void;
+  onDeleteHistory: (id: string) => void;
 }
 
 const educationOptions = [
@@ -17,14 +25,40 @@ const educationOptions = [
   "University degree",
 ];
 
-export const SkillsForm = ({ onSubmit, loading }: Props) => {
-  const [form, setForm] = useState<IntakeForm>({
+const sampleFor = (id: CountryPreset["id"]) => {
+  const preset = COUNTRY_PRESETS.find((p) => p.id === id)!;
+  return `${preset.city}, ${preset.country}`;
+};
+
+export const SkillsForm = ({
+  onSubmit,
+  loading,
+  country,
+  onCountryChange,
+  history,
+  onOpenHistory,
+  onDeleteHistory,
+}: Props) => {
+  const [form, setForm] = useState<IntakeForm>(() => ({
     name: "",
-    location: "",
+    location: sampleFor(country),
     education: "",
     skills: "",
     experience: "",
-  });
+  }));
+
+  // When country toggle changes, reflect it in the location field if user hasn't customised it
+  useEffect(() => {
+    setForm((f) => {
+      const matchesAnyPreset = COUNTRY_PRESETS.some(
+        (p) => f.location.trim().toLowerCase() === `${p.city}, ${p.country}`.toLowerCase()
+      );
+      if (matchesAnyPreset || !f.location.trim()) {
+        return { ...f, location: sampleFor(country) };
+      }
+      return f;
+    });
+  }, [country]);
 
   const valid =
     form.name.trim() &&
@@ -38,8 +72,13 @@ export const SkillsForm = ({ onSubmit, loading }: Props) => {
 
   return (
     <div className="min-h-screen bg-gradient-sun">
+      {/* Sticky country switcher */}
+      <div className="sticky top-0 z-10 px-5 pt-4 pb-3 backdrop-blur">
+        <CountrySwitcher value={country} onChange={onCountryChange} />
+      </div>
+
       {/* Hero */}
-      <header className="px-5 pt-10 pb-6">
+      <header className="px-5 pt-2 pb-6">
         <div className="mx-auto max-w-md">
           <div className="flex items-center gap-2 text-primary">
             <Compass className="h-5 w-5" strokeWidth={2.4} />
@@ -57,8 +96,19 @@ export const SkillsForm = ({ onSubmit, loading }: Props) => {
         </div>
       </header>
 
+      {/* Profile history */}
+      {history.length > 0 && (
+        <div className="px-5 pb-4">
+          <ProfileHistory
+            profiles={history}
+            onOpen={onOpenHistory}
+            onDelete={onDeleteHistory}
+          />
+        </div>
+      )}
+
       {/* Form card */}
-      <main className="px-5 pb-16">
+      <main className="space-y-5 px-5 pb-16">
         <form
           className="mx-auto max-w-md space-y-5 rounded-3xl bg-card p-6 shadow-card"
           onSubmit={(e) => {
@@ -169,6 +219,10 @@ export const SkillsForm = ({ onSubmit, loading }: Props) => {
             Takes ~15 seconds. Works on slow connections.
           </p>
         </form>
+
+        <div className="mx-auto max-w-md">
+          <AboutSection />
+        </div>
       </main>
     </div>
   );

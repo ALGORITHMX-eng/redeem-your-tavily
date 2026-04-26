@@ -32,3 +32,13 @@ export type IntakeForm = {
   skills: string;
   experience: string;
 };
+
+export type SavedProfile = {
+  id: string;
+  createdAt: number;
+  form: IntakeForm;
+  analysis: Analysis;
+  marketUsed: boolean;
+};
+
+export type ChatMessage = { role: "user" | "assistant"; content: string };

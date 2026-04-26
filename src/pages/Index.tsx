@@ -1,16 +1,29 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { SkillsForm } from "@/components/SkillsForm";
 import { ResultsView } from "@/components/ResultsView";
-import { Analysis, IntakeForm } from "@/lib/unmapped-types";
+import { Analysis, IntakeForm, SavedProfile } from "@/lib/unmapped-types";
+import { CountryPreset } from "@/components/CountrySwitcher";
+import {
+  deleteProfile,
+  getProfiles,
+  newProfileId,
+  saveProfile,
+} from "@/lib/storage";
 
 const Index = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [submitted, setSubmitted] = useState<IntakeForm | null>(null);
-  const [analysis, setAnalysis] = useState<Analysis | null>(null);
-  const [marketUsed, setMarketUsed] = useState(false);
+  const [active, setActive] = useState<SavedProfile | null>(null);
+  const [history, setHistory] = useState<SavedProfile[]>([]);
+  const [country, setCountry] = useState<CountryPreset["id"]>("ghana");
+
+  useEffect(() => {
+    setHistory(getProfiles());
+  }, []);
+
+  const refreshHistory = () => setHistory(getProfiles());
 
   const handleSubmit = async (form: IntakeForm) => {
     setLoading(true);
@@ -22,9 +35,18 @@ const Index = () => {
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);
 
-      setAnalysis((data as any).analysis as Analysis);
-      setMarketUsed(!!(data as any).market_used);
-      setSubmitted(form);
+      const analysis = (data as any).analysis as Analysis;
+      const marketUsed = !!(data as any).market_used;
+      const profile: SavedProfile = {
+        id: newProfileId(),
+        createdAt: Date.now(),
+        form,
+        analysis,
+        marketUsed,
+      };
+      saveProfile(profile);
+      refreshHistory();
+      setActive(profile);
       window.scrollTo({ top: 0 });
     } catch (e: any) {
       console.error(e);
@@ -40,22 +62,44 @@ const Index = () => {
   };
 
   const reset = () => {
-    setAnalysis(null);
-    setSubmitted(null);
+    setActive(null);
+    refreshHistory();
+    window.scrollTo({ top: 0 });
   };
 
-  if (analysis && submitted) {
+  const openHistory = (p: SavedProfile) => {
+    setActive(p);
+    window.scrollTo({ top: 0 });
+  };
+
+  const removeHistory = (id: string) => {
+    deleteProfile(id);
+    refreshHistory();
+  };
+
+  if (active) {
     return (
       <ResultsView
-        form={submitted}
-        analysis={analysis}
-        marketUsed={marketUsed}
+        profileId={active.id}
+        form={active.form}
+        analysis={active.analysis}
+        marketUsed={active.marketUsed}
         onReset={reset}
       />
     );
   }
 
-  return <SkillsForm onSubmit={handleSubmit} loading={loading} />;
+  return (
+    <SkillsForm
+      onSubmit={handleSubmit}
+      loading={loading}
+      country={country}
+      onCountryChange={setCountry}
+      history={history}
+      onOpenHistory={openHistory}
+      onDeleteHistory={removeHistory}
+    />
+  );
 };
 
 export default Index;
