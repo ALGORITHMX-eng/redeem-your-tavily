@@ -2,3 +2,6 @@ project_id = "hulitmnavjhsigknjwpu"
 
 [functions.analyze]
 verify_jwt = false
+
+[functions.career-chat]
+verify_jwt = false
