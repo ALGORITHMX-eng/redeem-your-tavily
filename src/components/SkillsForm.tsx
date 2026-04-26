@@ -1,10 +1,18 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Compass, Loader2, MapPin, Sparkles } from "lucide-react";
-import { IntakeForm } from "@/lib/unmapped-types";
+import { IntakeForm, SavedProfile } from "@/lib/unmapped-types";
+import { COUNTRY_PRESETS, CountryPreset, CountrySwitcher } from "@/components/CountrySwitcher";
+import { ProfileHistory } from "@/components/ProfileHistory";
+import { AboutSection } from "@/components/AboutSection";
 
 interface Props {
   onSubmit: (form: IntakeForm) => void;
   loading: boolean;
+  country: CountryPreset["id"];
+  onCountryChange: (id: CountryPreset["id"]) => void;
+  history: SavedProfile[];
+  onOpenHistory: (p: SavedProfile) => void;
+  onDeleteHistory: (id: string) => void;
 }
 
 const educationOptions = [
@@ -17,14 +25,40 @@ const educationOptions = [
   "University degree",
 ];
 
-export const SkillsForm = ({ onSubmit, loading }: Props) => {
-  const [form, setForm] = useState<IntakeForm>({
+const sampleFor = (id: CountryPreset["id"]) => {
+  const preset = COUNTRY_PRESETS.find((p) => p.id === id)!;
+  return `${preset.city}, ${preset.country}`;
+};
+
+export const SkillsForm = ({
+  onSubmit,
+  loading,
+  country,
+  onCountryChange,
+  history,
+  onOpenHistory,
+  onDeleteHistory,
+}: Props) => {
+  const [form, setForm] = useState<IntakeForm>(() => ({
     name: "",
-    location: "",
+    location: sampleFor(country),
     education: "",
     skills: "",
     experience: "",
-  });
+  }));
+
+  // When country toggle changes, reflect it in the location field if user hasn't customised it
+  useEffect(() => {
+    setForm((f) => {
+      const matchesAnyPreset = COUNTRY_PRESETS.some(
+        (p) => f.location.trim().toLowerCase() === `${p.city}, ${p.country}`.toLowerCase()
+      );
+      if (matchesAnyPreset || !f.location.trim()) {
+        return { ...f, location: sampleFor(country) };
+      }
+      return f;
+    });
+  }, [country]);
 
   const valid =
     form.name.trim() &&
