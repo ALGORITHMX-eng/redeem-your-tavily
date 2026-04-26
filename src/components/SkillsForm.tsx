@@ -219,6 +219,10 @@ export const SkillsForm = ({
             Takes ~15 seconds. Works on slow connections.
           </p>
         </form>
+
+        <div className="mx-auto max-w-md">
+          <AboutSection />
+        </div>
       </main>
     </div>
   );
