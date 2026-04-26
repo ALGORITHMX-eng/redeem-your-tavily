@@ -47,8 +47,7 @@ const Index = () => {
   if (analysis && submitted) {
     return (
       <ResultsView
-        name={submitted.name}
-        location={submitted.location}
+        form={submitted}
         analysis={analysis}
         marketUsed={marketUsed}
         onReset={reset}
