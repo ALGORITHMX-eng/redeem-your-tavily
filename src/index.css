@@ -2,95 +2,99 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* UNMAPPED — warm, earthy, mobile-first design system.
+   Colors are HSL. Designed for low-bandwidth African contexts:
+   no heavy gradients on hot paths, generous touch targets,
+   strong type contrast, minimal shadows. */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Surfaces — warm parchment */
+    --background: 36 40% 97%;
+    --foreground: 22 28% 14%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 36 50% 99%;
+    --card-foreground: 22 28% 14%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 36 50% 99%;
+    --popover-foreground: 22 28% 14%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary — terracotta clay */
+    --primary: 14 72% 48%;
+    --primary-foreground: 36 50% 99%;
+    --primary-glow: 18 85% 60%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Secondary — deep ochre */
+    --secondary: 36 65% 55%;
+    --secondary-foreground: 22 30% 12%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Accent — savanna green */
+    --accent: 140 35% 38%;
+    --accent-foreground: 36 50% 99%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --muted: 30 25% 92%;
+    --muted-foreground: 22 15% 38%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 75% 50%;
+    --destructive-foreground: 36 50% 99%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 30 25% 86%;
+    --input: 30 25% 88%;
+    --ring: 14 72% 48%;
 
-    --radius: 0.5rem;
+    --radius: 0.875rem;
 
-    --sidebar-background: 0 0% 98%;
+    /* Risk scale */
+    --risk-low: 140 50% 38%;
+    --risk-mid: 38 90% 50%;
+    --risk-high: 8 78% 50%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    /* Brand gradient — used sparingly on hero only */
+    --gradient-warm: linear-gradient(135deg, hsl(14 72% 48%), hsl(28 82% 55%));
+    --gradient-sun: linear-gradient(180deg, hsl(36 65% 96%), hsl(36 40% 97%));
 
-    --sidebar-primary: 240 5.9% 10%;
+    --shadow-soft: 0 1px 2px hsl(22 28% 14% / 0.04), 0 4px 14px hsl(22 28% 14% / 0.06);
+    --shadow-card: 0 1px 3px hsl(22 28% 14% / 0.05), 0 8px 24px hsl(14 72% 48% / 0.06);
 
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 36 40% 97%;
+    --sidebar-foreground: 22 28% 14%;
+    --sidebar-primary: 14 72% 48%;
+    --sidebar-primary-foreground: 36 50% 99%;
+    --sidebar-accent: 30 25% 92%;
+    --sidebar-accent-foreground: 22 28% 14%;
+    --sidebar-border: 30 25% 86%;
+    --sidebar-ring: 14 72% 48%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --background: 22 25% 8%;
+    --foreground: 36 30% 94%;
+    --card: 22 25% 11%;
+    --card-foreground: 36 30% 94%;
+    --popover: 22 25% 11%;
+    --popover-foreground: 36 30% 94%;
+    --primary: 18 85% 60%;
+    --primary-foreground: 22 25% 8%;
+    --primary-glow: 14 72% 48%;
+    --secondary: 36 50% 45%;
+    --secondary-foreground: 22 25% 8%;
+    --accent: 140 35% 48%;
+    --accent-foreground: 22 25% 8%;
+    --muted: 22 20% 16%;
+    --muted-foreground: 36 15% 65%;
+    --destructive: 0 65% 45%;
+    --destructive-foreground: 36 30% 94%;
+    --border: 22 20% 18%;
+    --input: 22 20% 18%;
+    --ring: 18 85% 60%;
+    --sidebar-background: 22 25% 8%;
+    --sidebar-foreground: 36 30% 94%;
+    --sidebar-primary: 18 85% 60%;
+    --sidebar-primary-foreground: 22 25% 8%;
+    --sidebar-accent: 22 20% 16%;
+    --sidebar-accent-foreground: 36 30% 94%;
+    --sidebar-border: 22 20% 18%;
+    --sidebar-ring: 18 85% 60%;
   }
 }
 
@@ -99,7 +103,25 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
-  body {
-    @apply bg-background text-foreground;
+  html {
+    -webkit-text-size-adjust: 100%;
   }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "ss01", "cv11";
+  }
+
+  h1, h2, h3, h4 {
+    font-family: "Sora", system-ui, -apple-system, sans-serif;
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer utilities {
+  .bg-gradient-warm { background: var(--gradient-warm); }
+  .bg-gradient-sun { background: var(--gradient-sun); }
+  .shadow-soft { box-shadow: var(--shadow-soft); }
+  .shadow-card { box-shadow: var(--shadow-card); }
+  .text-balance { text-wrap: balance; }
 }
