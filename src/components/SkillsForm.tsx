@@ -1,15 +1,13 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Compass, Loader2, MapPin, Sparkles } from "lucide-react";
 import { IntakeForm, SavedProfile } from "@/lib/unmapped-types";
-import { COUNTRY_PRESETS, CountryPreset, CountrySwitcher } from "@/components/CountrySwitcher";
 import { ProfileHistory } from "@/components/ProfileHistory";
 import { AboutSection } from "@/components/AboutSection";
+import { AppHeader } from "@/components/AppHeader";
 
 interface Props {
   onSubmit: (form: IntakeForm) => void;
   loading: boolean;
-  country: CountryPreset["id"];
-  onCountryChange: (id: CountryPreset["id"]) => void;
   history: SavedProfile[];
   onOpenHistory: (p: SavedProfile) => void;
   onDeleteHistory: (id: string) => void;
@@ -25,44 +23,24 @@ const educationOptions = [
   "University degree",
 ];
 
-const sampleFor = (id: CountryPreset["id"]) => {
-  const preset = COUNTRY_PRESETS.find((p) => p.id === id)!;
-  return `${preset.city}, ${preset.country}`;
-};
-
 export const SkillsForm = ({
   onSubmit,
   loading,
-  country,
-  onCountryChange,
   history,
   onOpenHistory,
   onDeleteHistory,
 }: Props) => {
   const [form, setForm] = useState<IntakeForm>(() => ({
     name: "",
-    location: sampleFor(country),
+    location: "",
     education: "",
     skills: "",
     experience: "",
   }));
 
-  // When country toggle changes, reflect it in the location field if user hasn't customised it
-  useEffect(() => {
-    setForm((f) => {
-      const matchesAnyPreset = COUNTRY_PRESETS.some(
-        (p) => f.location.trim().toLowerCase() === `${p.city}, ${p.country}`.toLowerCase()
-      );
-      if (matchesAnyPreset || !f.location.trim()) {
-        return { ...f, location: sampleFor(country) };
-      }
-      return f;
-    });
-  }, [country]);
-
   const valid =
     form.name.trim() &&
-    form.location.trim() &&
+    form.location.trim().length >= 2 &&
     form.education &&
     form.skills.trim().length >= 3 &&
     form.experience.trim().length >= 3;
@@ -72,12 +50,10 @@ export const SkillsForm = ({
 
   return (
     <div className="min-h-screen bg-gradient-sun">
-      {/* Sticky country switcher */}
       <div className="sticky top-0 z-10 px-5 pt-4 pb-3 backdrop-blur">
-        <CountrySwitcher value={country} onChange={onCountryChange} />
+        <AppHeader />
       </div>
 
-      {/* Hero */}
       <header className="px-5 pt-2 pb-6">
         <div className="mx-auto max-w-md">
           <div className="flex items-center gap-2 text-primary">
@@ -90,13 +66,12 @@ export const SkillsForm = ({
             Your skills are worth more than you think.
           </h1>
           <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
-            Tell us what you can do — we'll map it to real jobs and wages
-            in your region, using live market data.
+            Tell us where you live and what you can do — we'll map it to real jobs and
+            wages in your country, in your local currency, using live market data.
           </p>
         </div>
       </header>
 
-      {/* Profile history */}
       {history.length > 0 && (
         <div className="px-5 pb-4">
           <ProfileHistory
@@ -107,7 +82,6 @@ export const SkillsForm = ({
         </div>
       )}
 
-      {/* Form card */}
       <main className="space-y-5 px-5 pb-16">
         <form
           className="mx-auto max-w-md space-y-5 rounded-3xl bg-card p-6 shadow-card"
@@ -132,6 +106,7 @@ export const SkillsForm = ({
 
           <Field
             label="Where do you live?"
+            hint="City and country — works anywhere in the world."
             icon={<MapPin className="h-4 w-4 text-secondary" />}
           >
             <input
@@ -139,7 +114,7 @@ export const SkillsForm = ({
               maxLength={80}
               value={form.location}
               onChange={(e) => update("location", e.target.value)}
-              placeholder="e.g. Accra, Ghana"
+              placeholder="e.g. Accra, Ghana · São Paulo, Brazil · Hanoi, Vietnam"
               className="input-base"
               required
             />

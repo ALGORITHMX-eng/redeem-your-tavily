@@ -2,6 +2,8 @@ import { ArrowLeft, Briefcase, ShieldAlert, Target, TrendingUp } from "lucide-re
 import { Analysis, IntakeForm } from "@/lib/unmapped-types";
 import { CareerGuideChat } from "@/components/CareerGuideChat";
 import { AboutSection } from "@/components/AboutSection";
+import { RiskTimelineChart } from "@/components/RiskTimelineChart";
+import { Link } from "react-router-dom";
 
 interface Props {
   profileId: string;
@@ -47,7 +49,7 @@ export const ResultsView = ({ profileId, form, analysis, marketUsed, onReset }: 
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <div className="font-display text-xs font-semibold tracking-[0.18em] text-primary">
               UNMAPPED
             </div>
@@ -55,6 +57,12 @@ export const ResultsView = ({ profileId, form, analysis, marketUsed, onReset }: 
               {name} · {location}
             </div>
           </div>
+          <Link
+            to="/policy"
+            className="rounded-full bg-primary px-3 py-1.5 font-display text-[11px] font-semibold text-primary-foreground shadow-soft"
+          >
+            Policy View
+          </Link>
         </div>
       </header>
 
@@ -124,6 +132,13 @@ export const ResultsView = ({ profileId, form, analysis, marketUsed, onReset }: 
             <p className="mt-3 text-[13px] leading-relaxed text-foreground/80">
               {analysis.automation_risk.explanation}
             </p>
+
+            {analysis.automation_risk.timeline && (
+              <RiskTimelineChart
+                timeline={analysis.automation_risk.timeline}
+                level={analysis.automation_risk.level}
+              />
+            )}
           </div>
         </Section>
 

@@ -19,9 +19,9 @@ const AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 
 async function tavilyMarketSearch(location: string, skills: string) {
   const TAVILY_API_KEY = Deno.env.get("TAVILY_API_KEY");
-  if (!TAVILY_API_KEY) return { snippets: [], note: "Tavily not configured" };
+  if (!TAVILY_API_KEY) return { snippets: "", note: "Tavily not configured" };
 
-  const query = `Labor market jobs and wages in ${location} Africa for workers with skills: ${skills}. Informal economy salary ranges 2024 2025.`;
+  const query = `Labor market jobs and monthly wages in ${location} for workers with skills: ${skills}. Local currency salary ranges 2024 2025 informal and formal economy.`;
 
   try {
     const res = await fetch(TAVILY_URL, {
@@ -31,7 +31,7 @@ async function tavilyMarketSearch(location: string, skills: string) {
         api_key: TAVILY_API_KEY,
         query,
         search_depth: "basic",
-        max_results: 5,
+        max_results: 6,
         include_answer: true,
       }),
     });
@@ -39,12 +39,12 @@ async function tavilyMarketSearch(location: string, skills: string) {
     if (!res.ok) {
       const t = await res.text();
       console.error("Tavily error:", res.status, t);
-      return { snippets: [], note: `Tavily error ${res.status}` };
+      return { snippets: "", note: `Tavily error ${res.status}` };
     }
 
     const data = await res.json();
     const snippets = (data.results ?? [])
-      .slice(0, 5)
+      .slice(0, 6)
       .map((r: any) => `- ${r.title}: ${r.content?.slice(0, 400)}`)
       .join("\n");
 
@@ -63,10 +63,20 @@ const analysisTool = {
   function: {
     name: "return_skill_analysis",
     description:
-      "Return ISCO mapping, automation risk, and 3 real opportunities for the user.",
+      "Return ISCO mapping, automation risk timeline, and 3 real opportunities for the user in their specific country.",
     parameters: {
       type: "object",
       properties: {
+        country: {
+          type: "string",
+          description:
+            "The country name extracted from the user's location (e.g. 'Ghana', 'Brazil', 'Vietnam').",
+        },
+        currency: {
+          type: "string",
+          description:
+            "ISO 4217 currency code for the user's country (e.g. GHS, NGN, KES, BRL, VND, INR, USD, EUR).",
+        },
         summary: {
           type: "string",
           description:
@@ -103,8 +113,24 @@ const analysisTool = {
               type: "string",
               description: "Plain-language reason, max 35 words.",
             },
+            timeline: {
+              type: "object",
+              description:
+                "Projected automation risk for these skills at three points in time.",
+              properties: {
+                y2025: { type: "number", description: "Risk % in 2025 (0-100)" },
+                y2027: { type: "number", description: "Risk % in 2027 (0-100)" },
+                y2030: {
+                  type: "number",
+                  description:
+                    "Risk % in 2030 (0-100) — should match the headline score.",
+                },
+              },
+              required: ["y2025", "y2027", "y2030"],
+              additionalProperties: false,
+            },
           },
-          required: ["score", "level", "explanation"],
+          required: ["score", "level", "explanation", "timeline"],
           additionalProperties: false,
         },
         opportunities: {
@@ -129,7 +155,8 @@ const analysisTool = {
               },
               currency: {
                 type: "string",
-                description: "ISO currency code, e.g. GHS, NGN, KES",
+                description:
+                  "ISO 4217 currency code matching the country (e.g. GHS, BRL, INR).",
               },
               next_step: {
                 type: "string",
@@ -155,6 +182,8 @@ const analysisTool = {
         },
       },
       required: [
+        "country",
+        "currency",
         "summary",
         "isco_categories",
         "automation_risk",
@@ -174,7 +203,6 @@ serve(async (req) => {
   try {
     const body = (await req.json()) as AnalyzeRequest;
 
-    // Basic validation
     for (const f of ["name", "location", "education", "skills", "experience"]) {
       if (!body[f as keyof AnalyzeRequest] || String(body[f as keyof AnalyzeRequest]).trim().length === 0) {
         return new Response(
@@ -198,25 +226,29 @@ serve(async (req) => {
       );
     }
 
-    // 1. Live market data via Tavily
+    // 1. Live market data via Tavily — works for any country
     const market = await tavilyMarketSearch(body.location, body.skills);
 
     // 2. Lovable AI structured analysis
-    const systemPrompt = `You are an economic-mobility advisor for young Africans entering or moving within the informal economy.
-You map skills to ISCO-08 occupations, assess automation risk by 2030 using OECD/ILO frameworks, and propose realistic opportunities with regional wage estimates.
-Be honest, warm, and practical. Use local currency. Wages should reflect informal & semi-formal market rates in the user's region, not Western salaries.`;
+    const systemPrompt = `You are a global economic-mobility advisor. You map skills to ISCO-08 occupations, assess automation risk by 2030 using OECD/ILO/World Bank frameworks, and propose realistic opportunities with regional wage estimates.
+
+You work for ANY country in the world — not just one region. Always:
+- Detect the country from the user's location string and use its real local currency (ISO 4217 code).
+- Quote wages as monthly amounts at realistic local market rates (informal & semi-formal where relevant), not Western salaries.
+- Provide a 3-point automation-risk timeline (2025, 2027, 2030) that reflects how exposure to AI/automation grows over time for THIS specific skill mix in THIS country.
+- Be honest, warm, and practical.`;
 
     const userPrompt = `User profile:
 - Name: ${body.name}
 - Location: ${body.location}
 - Education: ${body.education}
-- Informal skills: ${body.skills}
+- Skills: ${body.skills}
 - Experience: ${body.experience}
 
-Live labor-market context (from web search):
-${market.answer ? `Summary: ${market.answer}\n` : ""}${market.snippets || "(no live data available — use your best regional knowledge)"}
+Live labor-market context (from web search for this exact location):
+${market.answer ? `Summary: ${market.answer}\n` : ""}${market.snippets || "(no live data available — use your best regional knowledge for this country)"}
 
-Now call return_skill_analysis with your full analysis. Wages must be monthly in the local currency of ${body.location}.`;
+Now call return_skill_analysis. Detect the country from the location, use its local currency, and ground wages and opportunities in this country's real labor market. The automation_risk.timeline should show the trajectory: typically lower in 2025, rising by 2027, peaking by 2030, with the 2030 value matching the headline score.`;
 
     const aiRes = await fetch(AI_URL, {
       method: "POST",

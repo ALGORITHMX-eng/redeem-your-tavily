@@ -4,7 +4,6 @@ import { useToast } from "@/hooks/use-toast";
 import { SkillsForm } from "@/components/SkillsForm";
 import { ResultsView } from "@/components/ResultsView";
 import { Analysis, IntakeForm, SavedProfile } from "@/lib/unmapped-types";
-import { CountryPreset } from "@/components/CountrySwitcher";
 import {
   deleteProfile,
   getProfiles,
@@ -17,7 +16,6 @@ const Index = () => {
   const [loading, setLoading] = useState(false);
   const [active, setActive] = useState<SavedProfile | null>(null);
   const [history, setHistory] = useState<SavedProfile[]>([]);
-  const [country, setCountry] = useState<CountryPreset["id"]>("ghana");
 
   useEffect(() => {
     setHistory(getProfiles());
@@ -93,8 +91,6 @@ const Index = () => {
     <SkillsForm
       onSubmit={handleSubmit}
       loading={loading}
-      country={country}
-      onCountryChange={setCountry}
       history={history}
       onOpenHistory={openHistory}
       onDeleteHistory={removeHistory}

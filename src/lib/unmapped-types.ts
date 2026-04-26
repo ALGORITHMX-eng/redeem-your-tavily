@@ -13,13 +13,22 @@ export type Opportunity = {
   next_step: string;
 };
 
+export type RiskTimeline = {
+  y2025: number;
+  y2027: number;
+  y2030: number;
+};
+
 export type Analysis = {
+  country?: string;
+  currency?: string;
   summary: string;
   isco_categories: IscoCategory[];
   automation_risk: {
     score: number;
     level: "low" | "medium" | "high";
     explanation: string;
+    timeline?: RiskTimeline;
   };
   opportunities: Opportunity[];
   market_note: string;
