@@ -72,8 +72,13 @@ export const SkillsForm = ({
 
   return (
     <div className="min-h-screen bg-gradient-sun">
+      {/* Sticky country switcher */}
+      <div className="sticky top-0 z-10 px-5 pt-4 pb-3 backdrop-blur">
+        <CountrySwitcher value={country} onChange={onCountryChange} />
+      </div>
+
       {/* Hero */}
-      <header className="px-5 pt-10 pb-6">
+      <header className="px-5 pt-2 pb-6">
         <div className="mx-auto max-w-md">
           <div className="flex items-center gap-2 text-primary">
             <Compass className="h-5 w-5" strokeWidth={2.4} />
@@ -91,8 +96,19 @@ export const SkillsForm = ({
         </div>
       </header>
 
+      {/* Profile history */}
+      {history.length > 0 && (
+        <div className="px-5 pb-4">
+          <ProfileHistory
+            profiles={history}
+            onOpen={onOpenHistory}
+            onDelete={onDeleteHistory}
+          />
+        </div>
+      )}
+
       {/* Form card */}
-      <main className="px-5 pb-16">
+      <main className="space-y-5 px-5 pb-16">
         <form
           className="mx-auto max-w-md space-y-5 rounded-3xl bg-card p-6 shadow-card"
           onSubmit={(e) => {
