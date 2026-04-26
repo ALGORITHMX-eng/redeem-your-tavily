@@ -1,8 +1,10 @@
 import { ArrowLeft, Briefcase, ShieldAlert, Target, TrendingUp } from "lucide-react";
 import { Analysis, IntakeForm } from "@/lib/unmapped-types";
 import { CareerGuideChat } from "@/components/CareerGuideChat";
+import { AboutSection } from "@/components/AboutSection";
 
 interface Props {
+  profileId: string;
   form: IntakeForm;
   analysis: Analysis;
   marketUsed: boolean;
@@ -30,7 +32,7 @@ const riskMeta = {
   },
 } as const;
 
-export const ResultsView = ({ form, analysis, marketUsed, onReset }: Props) => {
+export const ResultsView = ({ profileId, form, analysis, marketUsed, onReset }: Props) => {
   const { name, location } = form;
   const r = riskMeta[analysis.automation_risk.level];
 
@@ -181,7 +183,10 @@ export const ResultsView = ({ form, analysis, marketUsed, onReset }: Props) => {
         </div>
 
         {/* Career Guide chat */}
-        <CareerGuideChat form={form} analysis={analysis} />
+        <CareerGuideChat profileId={profileId} form={form} analysis={analysis} />
+
+        {/* About / open infrastructure */}
+        <AboutSection />
 
         <button
           onClick={onReset}
