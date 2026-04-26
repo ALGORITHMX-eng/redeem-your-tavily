@@ -1,16 +1,62 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { SkillsForm } from "@/components/SkillsForm";
+import { ResultsView } from "@/components/ResultsView";
+import { Analysis, IntakeForm } from "@/lib/unmapped-types";
 
-// IMPORTANT: Fully REPLACE this with your own code
-const PlaceholderIndex = () => {
-  // PLACEHOLDER: Replace this entire return statement with the user's app.
-  // The inline background color is intentionally not part of the design system.
-  return (
-    <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: '#fcfbf8' }}>
-      <img data-lovable-blank-page-placeholder="REMOVE_THIS" src="/placeholder.svg" alt="Your app will live here!" />
-    </div>
-  );
+const Index = () => {
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState<IntakeForm | null>(null);
+  const [analysis, setAnalysis] = useState<Analysis | null>(null);
+  const [marketUsed, setMarketUsed] = useState(false);
+
+  const handleSubmit = async (form: IntakeForm) => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("analyze", {
+        body: form,
+      });
+
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+
+      setAnalysis((data as any).analysis as Analysis);
+      setMarketUsed(!!(data as any).market_used);
+      setSubmitted(form);
+      window.scrollTo({ top: 0 });
+    } catch (e: any) {
+      console.error(e);
+      const msg = e?.message || "Something went wrong. Please try again.";
+      toast({
+        title: "Could not map your skills",
+        description: msg,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const reset = () => {
+    setAnalysis(null);
+    setSubmitted(null);
+  };
+
+  if (analysis && submitted) {
+    return (
+      <ResultsView
+        name={submitted.name}
+        location={submitted.location}
+        analysis={analysis}
+        marketUsed={marketUsed}
+        onReset={reset}
+      />
+    );
+  }
+
+  return <SkillsForm onSubmit={handleSubmit} loading={loading} />;
 };
-
-const Index = PlaceholderIndex;
 
 export default Index;
