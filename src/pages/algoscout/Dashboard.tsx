@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { ExternalLink, Check, X, Inbox, Clock, CheckCircle2, XCircle } from "lucide-react";
+import { ExternalLink, Check, X, Inbox, Clock, CheckCircle2, XCircle, BellRing, Loader2 } from "lucide-react";
 import { AlgoNavbar } from "@/components/algoscout/Navbar";
 import { ScorePill, StatusBadge } from "@/components/algoscout/ScorePill";
 import { Job, JobStatus, loadJobs, updateJobStatus } from "@/lib/algoscout-data";
+import { enablePushNotifications } from "@/lib/push-notifications";
+import { toast } from "sonner";
 
 const FILTERS: ("All" | JobStatus)[] = ["All", "Pending", "Approved", "Rejected"];
 
