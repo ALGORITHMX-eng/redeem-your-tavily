@@ -1,9 +1,16 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Check, ExternalLink, MapPin, X } from "lucide-react";
+import { ArrowLeft, Check, ExternalLink, FileText, MapPin, X } from "lucide-react";
 import { AlgoNavbar } from "@/components/algoscout/Navbar";
 import { ScorePill, StatusBadge } from "@/components/algoscout/ScorePill";
-import { Job, JobStatus, loadJobs, updateJobStatus } from "@/lib/algoscout-data";
+import {
+  DEFAULT_COVER_LETTER_PDF_URL,
+  DEFAULT_RESUME_PDF_URL,
+  Job,
+  JobStatus,
+  loadJobs,
+  updateJobStatus,
+} from "@/lib/algoscout-data";
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <section className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-5">
@@ -98,14 +105,103 @@ export default function AlgoJobDetail() {
           <Section title="Job description">
             <p className="whitespace-pre-line">{job.description}</p>
           </Section>
-          <Section title="Tailored resume preview">
+
+          <DocumentsViewer
+            resumeUrl={job.resumePdfUrl ?? DEFAULT_RESUME_PDF_URL}
+            coverLetterUrl={job.coverLetterPdfUrl ?? DEFAULT_COVER_LETTER_PDF_URL}
+          />
+
+          <Section title="Tailored resume notes">
             <pre className="whitespace-pre-wrap font-sans">{job.resume}</pre>
           </Section>
-          <Section title="Cover letter preview">
+          <Section title="Cover letter notes">
             <p className="whitespace-pre-line">{job.coverLetter}</p>
           </Section>
         </div>
       </main>
     </div>
+  );
+}
+
+type DocTab = "resume" | "cover";
+
+function DocumentsViewer({
+  resumeUrl,
+  coverLetterUrl,
+}: {
+  resumeUrl: string;
+  coverLetterUrl: string;
+}) {
+  const [tab, setTab] = useState<DocTab>("resume");
+  const activeUrl = tab === "resume" ? resumeUrl : coverLetterUrl;
+  const activeLabel = tab === "resume" ? "Tailored Resume" : "Cover Letter";
+
+  return (
+    <section className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/40">
+      <div className="flex items-center justify-between gap-3 border-b border-zinc-800 px-5 py-3">
+        <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-zinc-400">
+          Documents
+        </h2>
+        <a
+          href={activeUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-1.5 text-xs text-zinc-400 transition hover:text-zinc-200"
+        >
+          Open {activeLabel} <ExternalLink className="h-3 w-3" />
+        </a>
+      </div>
+
+      <div className="flex gap-1 border-b border-zinc-800 px-3 pt-3">
+        {([
+          { id: "resume", label: "Tailored Resume" },
+          { id: "cover", label: "Cover Letter" },
+        ] as { id: DocTab; label: string }[]).map((t) => {
+          const active = tab === t.id;
+          return (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={
+                "inline-flex items-center gap-1.5 rounded-t-md px-3.5 py-2 text-sm font-medium transition " +
+                (active
+                  ? "bg-zinc-950 text-zinc-100 ring-1 ring-zinc-800 ring-b-0"
+                  : "text-zinc-400 hover:text-zinc-200")
+              }
+            >
+              <FileText className="h-3.5 w-3.5" />
+              {t.label}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="bg-zinc-950 p-3">
+        <div className="overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900">
+          <object
+            key={activeUrl}
+            data={`${activeUrl}#toolbar=1&view=FitH`}
+            type="application/pdf"
+            className="h-[640px] w-full"
+            aria-label={activeLabel}
+          >
+            <div className="flex h-[640px] flex-col items-center justify-center gap-3 p-6 text-center">
+              <FileText className="h-8 w-8 text-zinc-500" />
+              <p className="text-sm text-zinc-400">
+                Can't display the PDF inline in this browser.
+              </p>
+              <a
+                href={activeUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-900 px-3.5 py-2 text-sm font-medium text-zinc-200 hover:bg-zinc-800"
+              >
+                Download {activeLabel} <ExternalLink className="h-3.5 w-3.5" />
+              </a>
+            </div>
+          </object>
+        </div>
+      </div>
+    </section>
   );
 }
