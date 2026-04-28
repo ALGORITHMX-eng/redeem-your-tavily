@@ -13,7 +13,16 @@ export type Job = {
   resume: string;
   coverLetter: string;
   location: string;
+  resumePdfUrl?: string;
+  coverLetterPdfUrl?: string;
 };
+
+// Default PDFs hosted on Supabase storage. Per-job URLs override these.
+// Replace these with real Supabase storage public URLs when documents are uploaded.
+export const DEFAULT_RESUME_PDF_URL =
+  "https://hulitmnavjhsigknjwpu.supabase.co/storage/v1/object/public/algoscout-docs/sample-resume.pdf";
+export const DEFAULT_COVER_LETTER_PDF_URL =
+  "https://hulitmnavjhsigknjwpu.supabase.co/storage/v1/object/public/algoscout-docs/sample-cover-letter.pdf";
 
 const seed: Job[] = [
   {
