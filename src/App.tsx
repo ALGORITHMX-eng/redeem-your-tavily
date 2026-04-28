@@ -18,7 +18,8 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
+          <Route path="/" element={<AlgoDashboard />} />
+          <Route path="/unmapped" element={<Index />} />
           <Route path="/policy" element={<Policy />} />
           <Route path="/algoscout" element={<AlgoDashboard />} />
           <Route path="/algoscout/job/:id" element={<AlgoJobDetail />} />
