@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { ExternalLink, Check, X, Inbox, Clock, CheckCircle2, XCircle } from "lucide-react";
+import { ExternalLink, Check, X, Inbox, Clock, CheckCircle2, XCircle, BellRing, Loader2 } from "lucide-react";
 import { AlgoNavbar } from "@/components/algoscout/Navbar";
 import { ScorePill, StatusBadge } from "@/components/algoscout/ScorePill";
 import { Job, JobStatus, loadJobs, updateJobStatus } from "@/lib/algoscout-data";
+import { enablePushNotifications } from "@/lib/push-notifications";
+import { toast } from "sonner";
 
 const FILTERS: ("All" | JobStatus)[] = ["All", "Pending", "Approved", "Rejected"];
 
@@ -61,14 +63,38 @@ export default function AlgoDashboard() {
     setJobs(updateJobStatus(id, status));
   };
 
+  const [pushBusy, setPushBusy] = useState(false);
+  const handleEnablePush = async () => {
+    setPushBusy(true);
+    try {
+      const res = await enablePushNotifications();
+      if (res.ok) toast.success(res.message);
+      else toast.error(res.message);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Failed to enable notifications.");
+    } finally {
+      setPushBusy(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <AlgoNavbar />
 
       <main className="mx-auto max-w-6xl px-5 py-8">
-        <div className="mb-6">
-          <h1 className="font-display text-2xl font-semibold tracking-tight">Dashboard</h1>
-          <p className="text-sm text-zinc-500">AI-scored job leads, ready for your review.</p>
+        <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h1 className="font-display text-2xl font-semibold tracking-tight">Dashboard</h1>
+            <p className="text-sm text-zinc-500">AI-scored job leads, ready for your review.</p>
+          </div>
+          <button
+            onClick={handleEnablePush}
+            disabled={pushBusy}
+            className="inline-flex items-center gap-2 rounded-lg bg-emerald-500/15 px-3.5 py-2 text-xs font-medium text-emerald-400 ring-1 ring-emerald-500/30 transition hover:bg-emerald-500/25 disabled:opacity-60"
+          >
+            {pushBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <BellRing className="h-3.5 w-3.5" />}
+            Enable Notifications
+          </button>
         </div>
 
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
